@@ -8,3 +8,6 @@ description: Starter template for leaflet plots
 usagePlan: public
 createdAt: '2021-05-18'
 createdBy: Quantargo
+tags:
+    - leaflet
+    - curated
