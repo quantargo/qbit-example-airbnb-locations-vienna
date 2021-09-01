@@ -1,0 +1,10 @@
+title: Leaflet plot showing AirBnb locations in Vienna
+technologies:
+- R
+repo: https://github.com/quantargo/qbit-example-airbnb-locations-vienna
+image: cover.png
+ogImage: cover.png
+description: Starter template for leaflet plots
+usagePlan: public
+createdAt: '2021-05-18'
+createdBy: Quantargo

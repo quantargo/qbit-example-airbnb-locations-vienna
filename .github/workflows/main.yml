@@ -1,0 +1,124 @@
+on:
+  push:
+    branches:
+      - main
+      - next
+
+name: Build and Deploy
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout repo
+        uses: actions/checkout@v1
+        with:
+          lfs: true
+          
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - uses: r-lib/actions/setup-r@v1
+        with:
+          r-version: '4.0.5'
+
+      - uses: r-lib/actions/setup-pandoc@v1
+      
+      - name: Install SO Files
+        run: |
+          export R_HOME=$(Rscript -e "cat(Sys.getenv('R_HOME'))")
+          echo $R_HOME
+          aws s3 sync s3://quantargo-repo-public/r/bin/linux/ubuntu-20.04/contrib/4.0.5/SOFiles/ sofiles
+          sudo mv sofiles/* $R_HOME/lib
+          rm -rf sofiles
+          sudo apt-get install libopenblas-dev
+  
+  
+      - name: Install Python deployment packages
+        run: |
+          DEBIAN_FRONTEND=noninteractive sudo apt-get install -yq python3-pip
+          sudo pip3 install pyyaml boto3 python-frontmatter awscli lxml pytz python-dateutil
+
+      - name: Checkout coursedeploy repo
+        uses: actions/checkout@v2
+        with:
+          repository: quantargo/coursedeploy
+          token: ${{ secrets.GIT_PAT }}
+          path: coursedeploy
+          ref: 'master'
+      - run: mv coursedeploy/* . && rm -rf coursedeploy
+
+      - name: Update renv repos
+        run: |
+          python3 script_update_renv_repos.py
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.local/share/renv
+          key: ${{ runner.os }}-renv-${{ hashFiles('**/renv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-renv-
+  
+      - name: Install R packages next
+        env:
+          GITHUB_PAT: ${{ secrets.GIT_PAT }}
+        if: endsWith(github.ref, '/next')
+        run: |
+          renv::restore()
+          install.packages("remotes")
+          remotes::install_github(paste(c("quantargo/qbit"), "next", sep="@"), upgrade="never")
+        shell: Rscript {0}
+
+      - name: Install R packages master
+        env:
+          GITHUB_PAT: ${{ secrets.GIT_PAT }}
+        if: endsWith(github.ref, '/main')
+        run: |
+          renv::restore()
+          install.packages("remotes")
+          remotes::install_github(paste(c("quantargo/qbit"), "master", sep="@"), upgrade="never")
+        shell: Rscript {0}
+        
+      - name: Build and Deploy QBit (Prod)
+        env:
+          GITHUB_PAT: ${{ secrets.GIT_PAT }}
+          STAGE: prod
+          REPONAME: ${{ github.event.repository.name }}
+          QKEY: ${{ secrets.QKEY_PROD }}
+        if: endsWith(github.ref, '/main')
+        run: |
+          library(qbit)
+          deploy(Sys.getenv("REPONAME"),
+            main_file = c("main.R"),
+            index = yaml::read_yaml("index.yml"),
+            meta = list(type="qbit"),
+            apikey = Sys.getenv("QKEY"))
+          Sys.sleep(30) # ...since function is still pending
+          invoke(Sys.getenv("REPONAME"), "state-reset")
+          run(Sys.getenv("REPONAME"), code = paste(readLines("main.R"), collapse = "\n"), async = TRUE)
+        shell: Rscript {0}
+        
+      - name: Build and Deploy QBit (Dev)
+        env:
+          GITHUB_PAT: ${{ secrets.GIT_PAT }}
+          STAGE: dev
+          REPONAME: ${{ github.event.repository.name }}
+          QKEY: ${{ secrets.QKEY_DEV }}
+          QBITURL: https://api.quantargo.com/v2-dev
+        if: endsWith(github.ref, '/next')
+        run: |
+          library(qbit)
+          deploy(Sys.getenv("REPONAME"),
+            main_file = c("main.R"),
+            index = yaml::read_yaml("index.yml"),
+            meta = list(type="qbit"),
+            apikey = Sys.getenv("QKEY"))
+          Sys.sleep(30) # ...since function is still pending
+          invoke(Sys.getenv("REPONAME"), "state-reset")
+          run(Sys.getenv("REPONAME"), code = paste(readLines("main.R"), collapse = "\n"), async = TRUE)
+        shell: Rscript {0}
