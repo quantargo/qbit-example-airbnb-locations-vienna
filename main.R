@@ -4,10 +4,12 @@ library(leaflet.extras)
 
 # Download Airbnb dataset Vienna
 listings_url <- "http://data.insideairbnb.com/austria/vienna/vienna/2021-07-07/data/listings.csv.gz"
-download.file(listings_url, basename(listings_url))
-listings <- read.csv(gzfile(basename(listings_url)), na.strings = c("","N/A"))
+#download.file(listings_url, basename(listings_url))
+#listings <- read.csv(gzfile(basename(listings_url)), na.strings = c("","N/A"))
+#listings <- listings[, c("name", "price", "listing_url", "longitude", "latitude")]
+#listings$price <- as.numeric(sub("$", "", listings$price, fixed = TRUE))
 
-listings$price <- as.numeric(sub("$", "", listings$price, fixed = TRUE))
+listings <- readRDS("listings.rds")
 listings$price[is.na(listings$price)] <- median(listings$price, na.rm = TRUE)
 
 leaflet(listings) %>% 

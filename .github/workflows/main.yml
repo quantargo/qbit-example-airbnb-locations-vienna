@@ -95,6 +95,7 @@ jobs:
           library(qbit)
           deploy(Sys.getenv("REPONAME"),
             main_file = c("main.R"),
+            files = "listings.rds",
             index = yaml::read_yaml("index.yml"),
             meta = list(type="qbit"),
             apikey = Sys.getenv("QKEY"))
@@ -115,6 +116,7 @@ jobs:
           library(qbit)
           deploy(Sys.getenv("REPONAME"),
             main_file = c("main.R"),
+            files = "listings.rds",
             index = yaml::read_yaml("index.yml"),
             meta = list(type="qbit"),
             apikey = Sys.getenv("QKEY"))
