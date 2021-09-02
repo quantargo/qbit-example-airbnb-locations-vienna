@@ -43,8 +43,3 @@ create_underpriced_plot <- function(num = 500) {
 }
 
 create_underpriced_plot(500)
-
-
-
-# Remove XGBoost from Environment (no live prediction, save memory)
-rm("xg_fit")

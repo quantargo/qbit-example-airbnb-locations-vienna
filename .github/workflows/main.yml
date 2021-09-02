@@ -101,7 +101,7 @@ jobs:
             apikey = Sys.getenv("QKEY"))
           Sys.sleep(30) # ...since function is still pending
           qbit::invoke(Sys.getenv("REPONAME"), "state-reset")
-          qbit::run(Sys.getenv("REPONAME"), code = paste(readLines("main.R"), collapse = "\n"), async = TRUE)
+          qbit::run(Sys.getenv("REPONAME"), code = paste(c(readLines("main.R"), "rm(\"xg_fit\")"),  collapse = "\n"), async = TRUE)
         shell: Rscript {0}
         
       - name: Build and Deploy QBit (Dev)
@@ -122,5 +122,5 @@ jobs:
             apikey = Sys.getenv("QKEY"))
           Sys.sleep(30) # ...since function is still pending
           qbit::invoke(Sys.getenv("REPONAME"), "state-reset")
-          qbit::run(Sys.getenv("REPONAME"), code = paste(readLines("main.R"), collapse = "\n"), async = TRUE)
+          qbit::run(Sys.getenv("REPONAME"), code = paste(c(readLines("main.R"), "rm(\"xg_fit\")"),  collapse = "\n"), async = TRUE)
         shell: Rscript {0}
