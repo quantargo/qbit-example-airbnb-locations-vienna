@@ -14,17 +14,16 @@ listings_url <- "http://data.insideairbnb.com/austria/vienna/vienna/2021-07-07/d
 listings <- readRDS("listings.rds")
 xg_fit <- readRDS("xg_fit.rds")
 
-listings_sel <- predict(xg_fit, new_data = listings) %>%
-  bind_cols(listings) %>%
-  mutate(price = exp(price), price_pred = exp(.pred)) %>%
-  mutate(discount = price/price_pred -1) %>%
-  select(name, price, price_pred, discount, listing_url, longitude, latitude) %>%
-  arrange(discount) %>%
-  head(500)
+create_underpriced_plot <- function(num = 500) {
+  listings_sel <- predict(xg_fit, new_data = listings) %>%
+    bind_cols(listings) %>%
+    mutate(price = exp(price), price_pred = exp(.pred)) %>%
+    mutate(discount = price/price_pred -1) %>%
+    select(name, price, price_pred, discount, listing_url, longitude, latitude) %>%
+    arrange(discount) %>%
+    head(num)
 
-listings_sel
-
-leaflet(listings_sel) %>% 
+  leaflet(listings_sel) %>% 
   addTiles() %>% 
   addMarkers(
     clusterOptions = markerClusterOptions(),
@@ -35,3 +34,6 @@ leaflet(listings_sel) %>%
     lng = ~longitude, lat = ~latitude, intensity = ~price,
     blur = 20, max = 0.05, radius = 15
   )
+}
+
+create_underpriced_plot(500)
