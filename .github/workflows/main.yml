@@ -67,7 +67,7 @@ jobs:
       - name: Install R packages next
         env:
           GITHUB_PAT: ${{ secrets.GIT_PAT }}
-        if: endsWith(github.ref, '/master')
+        if: endsWith(github.ref, '/next')
         run: |
           renv::restore()
           install.packages("remotes")
