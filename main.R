@@ -5,11 +5,12 @@ library(tidymodels)
 
 # Download Inside-Airbnb dataset for Vienna
 listings_url <- "http://data.insideairbnb.com/austria/vienna/vienna/2021-07-07/data/listings.csv.gz"
-download.file(listings_url, basename(listings_url))
-listings <- read.csv(gzfile(basename(listings_url)), na.strings = c("","N/A")) %>%
-  mutate(price = as.numeric(sub("$", "", price, fixed = TRUE))) %>%
-  mutate(price = log(price + 1)) %>%
-  filter(!is.na(price))
+#download.file(listings_url, basename(listings_url))
+#listings <- read.csv(gzfile(basename(listings_url)), na.strings = c("","N/A")) %>%
+#  mutate(price = as.numeric(sub("$", "", price, fixed = TRUE))) %>%
+#  mutate(price = log(price + 1)) %>%
+#  filter(!is.na(price))
+listings <- readRDS("listings.rds")
 
 # Load trained XGBoost Model for Vienna
 xg_fit <- readRDS("xg_fit.rds")
