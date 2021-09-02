@@ -34,7 +34,7 @@ create_underpriced_plot <- function(num = 500) {
     addMarkers(
       clusterOptions = markerClusterOptions(),
       label = toplist$name,
-      popup = paste0('<b>', toplist$name, '</b><br><br>Price: USD', toplist$price, '<br>Prediction: USD', round(toplist$price_pred, 2), '<br>Discount: ', round(toplist$discount * 100, 2), ' %<br><a href="', toplist$listing_url,'" target="_blank">LINK<a>')
+      popup = paste0('<b>', toplist$name, '</b><br><br>Price: USD ', toplist$price, '<br>Prediction: USD ', round(toplist$price_pred, 2), '<br>Discount: ', round(toplist$discount * 100, 2), ' %<br><a href="', toplist$listing_url,'" target="_blank">LINK<a>')
     ) %>%
     addHeatmap(
       lng = ~longitude, lat = ~latitude, intensity = ~price,
