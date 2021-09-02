@@ -16,7 +16,7 @@ listings <- readRDS("listings.rds")
 xg_fit <- readRDS("xg_fit.rds")
 
 # Predict prices for dataset and calculate discount
-listings_sel <- predict(xg_fit, new_data = listings) %>%
+listings <- predict(xg_fit, new_data = listings) %>%
   bind_cols(listings) %>%
   mutate(price = exp(price), price_pred = exp(.pred)) %>%
   mutate(discount = price/price_pred -1) %>%
@@ -25,7 +25,7 @@ listings_sel <- predict(xg_fit, new_data = listings) %>%
 # Create leaflet plot to show underpriced apartements
 # @param num integer; Number of apartements to show on plot
 create_underpriced_plot <- function(num = 500) {
-  toplist <- listings_sel %>%
+  toplist <- listings %>%
     arrange(discount) %>%
     head(num)
 
